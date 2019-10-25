@@ -7,7 +7,7 @@
 
 /*
  * This file contains the system call numbers.
- *
+ * 系统调用号，号码必须是连续性的，不能出现中空的情况
  * Note: holes are not allowed.
  */
 

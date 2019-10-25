@@ -897,6 +897,9 @@ dotraplinkage void do_iret_error(struct pt_regs *regs, long error_code)
 }
 #endif
 
+/*
+ * 中断初始化
+ */
 void __init trap_init(void)
 {
 	int i;
@@ -959,7 +962,9 @@ void __init trap_init(void)
 		set_in_cr4(X86_CR4_OSXMMEXCPT);
 		printk("done.\n");
 	}
-
+    /*
+     * 设置INT 0x80中断（软中断）的服务程序为system_call
+     */
 	set_system_trap_gate(SYSCALL_VECTOR, &system_call);
 	set_bit(SYSCALL_VECTOR, used_vectors);
 #endif

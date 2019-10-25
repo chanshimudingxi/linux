@@ -10,6 +10,7 @@ asmlinkage long sys_ni_syscall(void);
 
 /*
  * Non-implemented system calls get redirected here.
+ * 默认的系统调用处理函数。逻辑是直接返回错误码。
  */
 asmlinkage long sys_ni_syscall(void)
 {

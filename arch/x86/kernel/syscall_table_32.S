@@ -1,3 +1,6 @@
+/*
+ * 对系统调用表赋值，每个系统调用号对应相应的处理函数
+ */
 ENTRY(sys_call_table)
 	.long sys_restart_syscall	/* 0 - old "setup()" system call, used for restarting */
 	.long sys_exit

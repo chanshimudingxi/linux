@@ -19,6 +19,10 @@ typedef void (*sys_call_ptr_t)(void);
 
 extern void sys_ni_syscall(void);
 
+/*
+ * 系统调用表是个数组，他是个全局变量，数组大小固定的，数组成员是函数指针，
+ * 函数原型 void (void)。数组初始化时的值是一个默认的处理函数，不是空指针。
+ */
 const sys_call_ptr_t sys_call_table[__NR_syscall_max+1] = {
 	/*
 	*Smells like a like a compiler bug -- it doesn't work

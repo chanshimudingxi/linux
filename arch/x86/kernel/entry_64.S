@@ -8,7 +8,7 @@
 
 /*
  * entry.S contains the system-call and fault low-level handling routines.
- *
+ * 系统调用和低级故障处理
  * NOTE: This code handles signal-recognition, which happens every time
  * after an interrupt and after each system call.
  *
@@ -489,6 +489,7 @@ system_call_fastpath:
 /*
  * Syscall return path ending with SYSRET (fast path)
  * Has incomplete stack frame and undefined top of stack.
+ * 系统调用返回
  */
 ret_from_sys_call:
 	movl $_TIF_ALLWORK_MASK,%edi

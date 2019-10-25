@@ -1257,6 +1257,7 @@ __init void lguest_init(void)
 	 */
 
 	/* Interrupt-related operations */
+    /* 中断相关的操作 */
 	pv_irq_ops.save_fl = PV_CALLEE_SAVE(save_fl);
 	pv_irq_ops.restore_fl = __PV_IS_CALLEE_SAVE(lg_restore_fl);
 	pv_irq_ops.irq_disable = PV_CALLEE_SAVE(irq_disable);
@@ -1415,6 +1416,8 @@ __init void lguest_init(void)
 	/*
 	 * Now we're set up, call i386_start_kernel() in head32.c and we proceed
 	 * to boot as normal.  It never returns.
+     * 到这步为止，代表已经安装完毕。开始启动内核，i386_start_kernel这个函数是个死循环，
+     * 永远都不会主动返回。
 	 */
 	i386_start_kernel();
 }
