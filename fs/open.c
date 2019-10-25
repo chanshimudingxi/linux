@@ -1036,6 +1036,9 @@ long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
 	if (!IS_ERR(tmp)) {
 		fd = get_unused_fd_flags(flags);
 		if (fd >= 0) {
+            /*
+             * 打开文件，返回一个file结构
+             */
 			struct file *f = do_filp_open(dfd, tmp, flags, mode, 0);
 			if (IS_ERR(f)) {
 				put_unused_fd(fd);
@@ -1050,6 +1053,9 @@ long do_sys_open(int dfd, const char __user *filename, int flags, int mode)
 	return fd;
 }
 
+/*
+ * open的系统调用。这个系统调用有3个参数。
+ */
 SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, int, mode)
 {
 	long ret;
@@ -1063,6 +1069,9 @@ SYSCALL_DEFINE3(open, const char __user *, filename, int, flags, int, mode)
 	return ret;
 }
 
+/*
+ * opennat的系统调用。这个系统调用有4个参数。
+ */
 SYSCALL_DEFINE4(openat, int, dfd, const char __user *, filename, int, flags,
 		int, mode)
 {

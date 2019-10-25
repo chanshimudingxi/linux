@@ -1461,12 +1461,15 @@ static const struct address_space_operations def_blk_aops = {
 	.direct_IO	= blkdev_direct_IO,
 };
 
+/*
+ * 块设备的相关的操作
+ */
 const struct file_operations def_blk_fops = {
-	.open		= blkdev_open,
-	.release	= blkdev_close,
+	.open		= blkdev_open,//打开设备
+	.release	= blkdev_close,//关闭设备
 	.llseek		= block_llseek,
-	.read		= do_sync_read,
-	.write		= do_sync_write,
+	.read		= do_sync_read, //同步读
+	.write		= do_sync_write, //同步写
   	.aio_read	= generic_file_aio_read,
 	.aio_write	= blkdev_aio_write,
 	.mmap		= generic_file_mmap,

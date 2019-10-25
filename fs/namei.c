@@ -1665,6 +1665,8 @@ static int open_will_write_to_fs(int flag, struct inode *inode)
  * Note that the low bits of the passed in "open_flag"
  * are not the same as in the local variable "flag". See
  * open_to_namei_flags() for more details.
+ * 
+ * 此处open_flag的低位bit有可能已经发生了变化。
  */
 struct file *do_filp_open(int dfd, const char *pathname,
 		int open_flag, int mode, int acc_mode)
