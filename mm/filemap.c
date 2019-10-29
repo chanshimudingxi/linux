@@ -293,7 +293,7 @@ int wait_on_page_writeback_range(struct address_space *mapping,
 			/* until radix tree lookup accepts end_index */
 			if (page->index > end)
 				continue;
-
+      //等待分页写回设备释放内存
 			wait_on_page_writeback(page);
 			if (PageError(page))
 				ret = -EIO;
@@ -374,9 +374,9 @@ EXPORT_SYMBOL(filemap_write_and_wait);
 
 /**
  * filemap_write_and_wait_range - write out & wait on a file range
- * @mapping:	the address_space for the pages
- * @lstart:	offset in bytes where the range starts
- * @lend:	offset in bytes where the range ends (inclusive)
+ * @mapping:	the address_space for the pages 分页的地址空间
+ * @lstart:	offset in bytes where the range starts 区间开始偏移值地址
+ * @lend:	offset in bytes where the range ends (inclusive) 区间结束偏移值地址
  *
  * Write out and wait upon file offsets lstart->lend, inclusive.
  *
@@ -971,7 +971,7 @@ static void shrink_readahead_size_eio(struct file *filp,
 }
 
 /**
- * do_generic_file_read - generic file read routine
+ * do_generic_file_read - generic file read routine 文件读通用接口
  * @filp:	the file to read
  * @ppos:	current file position
  * @desc:	read_descriptor
@@ -979,6 +979,7 @@ static void shrink_readahead_size_eio(struct file *filp,
  *
  * This is a generic file read routine, and uses the
  * mapping->a_ops->readpage() function for the actual low-level stuff.
+ * 底层用的是内存页的读取函数
  *
  * This is really ugly. But the goto's actually try to clarify some
  * of the logic when it comes to error handling etc.
@@ -1121,6 +1122,7 @@ page_not_up_to_date_locked:
 
 readpage:
 		/* Start the actual read. The read will unlock the page. */
+    /* 读取分页，读取分页的过程中会对分页加锁*/
 		error = mapping->a_ops->readpage(filp, page);
 
 		if (unlikely(error)) {
@@ -1231,9 +1233,9 @@ success:
 
 /*
  * Performs necessary checks before doing a write
- * @iov:	io vector request
- * @nr_segs:	number of segments in the iovec
- * @count:	number of bytes to write
+ * @iov:	io vector request io请求
+ * @nr_segs:	number of segments in the iovec io请求中的分页
+ * @count:	number of bytes to write 写字节数
  * @access_flags: type of access: %VERIFY_READ or %VERIFY_WRITE
  *
  * Adjust number of segments and amount of bytes to write (nr_segs should be
@@ -1277,6 +1279,7 @@ EXPORT_SYMBOL(generic_segment_checks);
  *
  * This is the "read()" routine for all filesystems
  * that can use the page cache directly.
+ * 文件系统通用的read接口，一般如果不自己实现文件操作接口中的aio_read接口的话，就采用这个。
  */
 ssize_t
 generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
@@ -1294,6 +1297,7 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
 		return retval;
 
 	/* coalesce the iovecs and go direct-to-BIO for O_DIRECT */
+  /* 函数通过文件标志位判断读文件是不是O_DIRECT形式，如果是，则进入直读模式，也就是跳过页缓存 */
 	if (filp->f_flags & O_DIRECT) {
 		loff_t size;
 		struct address_space *mapping;
@@ -1320,6 +1324,7 @@ generic_file_aio_read(struct kiocb *iocb, const struct iovec *iov,
 		}
 	}
 
+  /* 通过内存页的方式读取文件数据 */
 	for (seg = 0; seg < nr_segs; seg++) {
 		read_descriptor_t desc;
 

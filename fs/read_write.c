@@ -21,6 +21,9 @@
 #include <asm/uaccess.h>
 #include <asm/unistd.h>
 
+/*
+ * 文件系统通用的接口(file_operations)实现。
+ */
 const struct file_operations generic_ro_fops = {
 	.llseek		= generic_file_llseek,
 	.read		= do_sync_read,
@@ -249,6 +252,9 @@ static void wait_on_retry_sync_kiocb(struct kiocb *iocb)
 	__set_current_state(TASK_RUNNING);
 }
 
+/* 
+ * 同步读
+ */
 ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *ppos)
 {
 	struct iovec iov = { .iov_base = buf, .iov_len = len };
@@ -259,7 +265,9 @@ ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *pp
 	kiocb.ki_pos = *ppos;
 	kiocb.ki_left = len;
 
+  //同步读本身已经有了死循化，读不完全的话就一直重试，所以要慎用
 	for (;;) {
+    //调用fs（具体文件系统）的aio_read
 		ret = filp->f_op->aio_read(&kiocb, &iov, 1, kiocb.ki_pos);
 		if (ret != -EIOCBRETRY)
 			break;
@@ -274,20 +282,27 @@ ssize_t do_sync_read(struct file *filp, char __user *buf, size_t len, loff_t *pp
 
 EXPORT_SYMBOL(do_sync_read);
 
+/* 
+ * VFS层vfs_read的实现
+ */
 ssize_t vfs_read(struct file *file, char __user *buf, size_t count, loff_t *pos)
 {
 	ssize_t ret;
 
+  //检查标志位
 	if (!(file->f_mode & FMODE_READ))
 		return -EBADF;
+  //检查调用的操作函数指针
 	if (!file->f_op || (!file->f_op->read && !file->f_op->aio_read))
 		return -EINVAL;
+  //检查访问权限
 	if (unlikely(!access_ok(VERIFY_WRITE, buf, count)))
 		return -EFAULT;
-
+  //检查数据区域并发权限
 	ret = rw_verify_area(READ, file, pos, count);
 	if (ret >= 0) {
 		count = ret;
+    //如果文件系统实现了read接口，那就优先调用该接口；如果没有那就调用通用实现的do_sync_read接口
 		if (file->f_op->read)
 			ret = file->f_op->read(file, buf, count, pos);
 		else
@@ -369,6 +384,19 @@ static inline void file_pos_write(struct file *file, loff_t pos)
 	file->f_pos = pos;
 }
 
+/*
+ * 系统调用sys_read的定义。
+ * #define SYSCALL_DEFINE3(name, ...) SYSCALL_DEFINEx(3, _##name, __VA_ARGS__)
+ * #define SYSCALL_DEFINEx(x, name, ...)	__SYSCALL_DEFINEx(x, name, __VA_ARGS__)
+ * #define __SYSCALL_DEFINEx(x, name, ...) asmlinkage long sys##name(__SC_DECL##x(__VA_ARGS__))
+ * #define SYSCALL_DEFINE3(name, ...) asmlinkage long sys_name(__SC_DECL##3(__VA_ARGS__))
+ * #define __SC_DECL1(t1, a1)	t1 a1
+ * #define __SC_DECL2(t2, a2, ...) t2 a2, __SC_DECL1(__VA_ARGS__)
+ * #define __SC_DECL3(t3, a3, ...) t3 a3, __SC_DECL2(__VA_ARGS__)
+ * #define __SC_DECL4(t4, a4, ...) t4 a4, __SC_DECL3(__VA_ARGS__)
+ * #define __SC_DECL5(t5, a5, ...) t5 a5, __SC_DECL4(__VA_ARGS__)
+ * #define __SC_DECL6(t6, a6, ...) t6 a6, __SC_DECL5(__VA_ARGS__)
+ */
 SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 {
 	struct file *file;
@@ -378,6 +406,7 @@ SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
 	file = fget_light(fd, &fput_needed);
 	if (file) {
 		loff_t pos = file_pos_read(file);
+    //此处调用了VFS层的vfs_read，文件系统设计是面向接口编程
 		ret = vfs_read(file, buf, count, &pos);
 		file_pos_write(file, pos);
 		fput_light(file, fput_needed);

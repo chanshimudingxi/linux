@@ -159,6 +159,7 @@ map_buffer_to_page(struct page *page, struct buffer_head *bh, int page_block)
  * This is the worker routine which does all the work of mapping the disk
  * blocks and constructs largest possible bios, submits them for IO if the
  * blocks are not contiguous on the disk.
+ * 把磁盘上块组织成一个最基础的输入输出系统。同时把磁盘上非连续性的块组织成一个IO。
  *
  * We pass a buffer_head back and forth and use its buffer_mapped() flag to
  * represent the validity of its disk mapping and to decide when to do the next
@@ -221,6 +222,7 @@ do_mpage_readpage(struct bio *bio, struct page *page, unsigned nr_pages,
 
 	/*
 	 * Then do more get_blocks calls until we are done with this page.
+   * 处理更多的块，直到把分页搞定
 	 */
 	map_bh->b_page = page;
 	while (page_block < blocks_per_page) {

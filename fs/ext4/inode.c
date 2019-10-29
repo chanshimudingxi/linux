@@ -3823,17 +3823,18 @@ static int ext4_journalled_set_page_dirty(struct page *page)
 	return __set_page_dirty_nobuffers(page);
 }
 
+/* 初始化ext4文件系统的地址空间操作接口 */
 static const struct address_space_operations ext4_ordered_aops = {
-	.readpage		= ext4_readpage,
-	.readpages		= ext4_readpages,
-	.writepage		= ext4_writepage,
-	.sync_page		= block_sync_page,
+	.readpage		= ext4_readpage,  //读取分页
+	.readpages		= ext4_readpages, //读取分页
+	.writepage		= ext4_writepage, //写回分页
+	.sync_page		= block_sync_page,  //同步分页，块设备有个通用的实现
 	.write_begin		= ext4_write_begin,
 	.write_end		= ext4_ordered_write_end,
 	.bmap			= ext4_bmap,
 	.invalidatepage		= ext4_invalidatepage,
 	.releasepage		= ext4_releasepage,
-	.direct_IO		= ext4_direct_IO,
+	.direct_IO		= ext4_direct_IO, //直接IO
 	.migratepage		= buffer_migrate_page,
 	.is_partially_uptodate  = block_is_partially_uptodate,
 	.error_remove_page	= generic_error_remove_page,

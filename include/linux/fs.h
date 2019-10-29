@@ -91,7 +91,8 @@ struct inodes_stat_t {
  * The below are the various read and write types that we support. Some of
  * them include behavioral modifiers that send information down to the
  * block layer and IO scheduler. Terminology:
- *
+ * 几种不同的读和写的方式，对应着下面block层和IO调度器的不同行为
+ * 
  *	The block layer uses device plugging to defer IO a little bit, in
  *	the hope that we will see more IO very shortly. This increases
  *	coalescing of adjacent IO and thus reduces the number of IOs we
@@ -99,6 +100,10 @@ struct inodes_stat_t {
  *	if the IO isn't mergeable. If the caller is going to be waiting
  *	for the IO, then he must ensure that the device is unplugged so
  *	that the IO is dispatched to the driver.
+ *  block层通过设备插入来稍微延迟IO，我们希望看到更多的IO耗时更短。主要原则就是合并IO，
+ *  使地址相邻IO尽量在一起，这就意味这需要一个IO排队算法。但是有排队算法的调整，有可能
+ *  造成的影响就是本来需要及时响应的IO没有及时响应，所以需要对这种场景做适配，这就有了同
+ *  步IO和异步IO。其实在底层，也就是和设备打交道的那层都是异步的。
  *
  *	All IO is handled async in Linux. This is fine for background
  *	writes, but for reads or writes that someone waits for completion
@@ -564,15 +569,18 @@ typedef struct {
 typedef int (*read_actor_t)(read_descriptor_t *, struct page *,
 		unsigned long, unsigned long);
 
+/* 地址空间操作接口 */
 struct address_space_operations {
-	int (*writepage)(struct page *page, struct writeback_control *wbc);
-	int (*readpage)(struct file *, struct page *);
-	void (*sync_page)(struct page *);
+	int (*writepage)(struct page *page, struct writeback_control *wbc);//写回分页
+	int (*readpage)(struct file *, struct page *);//读取分页
+	void (*sync_page)(struct page *);//同步分页内容
 
 	/* Write back some dirty pages from this mapping. */
+  /* 写回脏分页*/
 	int (*writepages)(struct address_space *, struct writeback_control *);
 
 	/* Set a page dirty.  Return true if this dirtied it */
+  /* 设置脏分页*/
 	int (*set_page_dirty)(struct page *page);
 
 	int (*readpages)(struct file *filp, struct address_space *mapping,
@@ -615,6 +623,7 @@ int pagecache_write_end(struct file *, struct address_space *mapping,
 				struct page *page, void *fsdata);
 
 struct backing_dev_info;
+/* 地址空间，专门定义一种类型，说明地址空间这个实体有某种特征 */
 struct address_space {
 	struct inode		*host;		/* owner: inode, block_device */
 	struct radix_tree_root	page_tree;	/* radix tree of all pages */
@@ -626,7 +635,7 @@ struct address_space {
 	unsigned int		truncate_count;	/* Cover race condition with truncate */
 	unsigned long		nrpages;	/* number of total pages */
 	pgoff_t			writeback_index;/* writeback starts here */
-	const struct address_space_operations *a_ops;	/* methods */
+	const struct address_space_operations *a_ops;	/* methods 地址空间的操作接口*/
 	unsigned long		flags;		/* error bits/gfp mask */
 	struct backing_dev_info *backing_dev_info; /* device readahead, etc */
 	spinlock_t		private_lock;	/* for use by the address_space */

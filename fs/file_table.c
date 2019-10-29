@@ -322,6 +322,8 @@ EXPORT_SYMBOL(fget);
  * holds a refcnt to that file. That check has to be done at fget() only
  * and a flag is returned to be passed to the corresponding fput_light().
  * There must not be a cloning between an fget_light/fput_light pair.
+ * 轻量级文件检查，它不增加对文件描述符的引用计数，所以必须要求文件描述符在之前已经增加过引用计数了。
+ * 同时必须注意的是在fget_light/fput_light之间不能存在描述符的拷贝
  */
 struct file *fget_light(unsigned int fd, int *fput_needed)
 {

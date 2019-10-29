@@ -292,6 +292,10 @@ static void prof_sysexit_disable_##sname(void)				       \
 	__SYSCALL_DEFINEx(x, sname, __VA_ARGS__)
 #endif
 
+/*
+ * 系统调用的定义，通过宏取了个别名。在定义的时候用的是别名，由于宏的
+ * 特性，实际上用的还是系统调用的名字。
+ */
 #ifdef CONFIG_HAVE_SYSCALL_WRAPPERS
 
 #define SYSCALL_DEFINE(name) static inline long SYSC_##name

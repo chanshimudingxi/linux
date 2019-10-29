@@ -130,11 +130,14 @@ static int ext4_file_open(struct inode * inode, struct file * filp)
 	return generic_file_open(inode, filp);
 }
 
+/* 
+ * ext4文件系统file_operations(文件操作接口)
+ */
 const struct file_operations ext4_file_operations = {
-	.llseek		= generic_file_llseek,
-	.read		= do_sync_read,
-	.write		= do_sync_write,
-	.aio_read	= generic_file_aio_read,
+	.llseek		= generic_file_llseek,//通用
+	.read		= do_sync_read,//通用
+	.write		= do_sync_write,//通用
+	.aio_read	= generic_file_aio_read,//通用
 	.aio_write	= ext4_file_write,
 	.unlocked_ioctl = ext4_ioctl,
 #ifdef CONFIG_COMPAT
@@ -144,8 +147,8 @@ const struct file_operations ext4_file_operations = {
 	.open		= ext4_file_open,
 	.release	= ext4_release_file,
 	.fsync		= ext4_sync_file,
-	.splice_read	= generic_file_splice_read,
-	.splice_write	= generic_file_splice_write,
+	.splice_read	= generic_file_splice_read,//通用
+	.splice_write	= generic_file_splice_write,//通用
 };
 
 const struct inode_operations ext4_file_inode_operations = {
