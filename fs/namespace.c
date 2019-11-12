@@ -2082,6 +2082,9 @@ struct mnt_namespace *create_mnt_ns(struct vfsmount *mnt)
 }
 EXPORT_SYMBOL(create_mnt_ns);
 
+/*
+ * sys_mount的实现，用来挂载设备
+ */
 SYSCALL_DEFINE5(mount, char __user *, dev_name, char __user *, dir_name,
 		char __user *, type, unsigned long, flags, void __user *, data)
 {

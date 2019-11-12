@@ -514,6 +514,11 @@ static void __init mm_init(void)
 	vmalloc_init();
 }
 
+/*
+ * init进程是从start_kernel函数中开始执行的，
+ * 这个函数被调用之前都是一些系统初始化操作（汇编语言编写），
+ * start_kernel不仅仅完成了内核初始化还启动了init进程。
+ */
 asmlinkage void __init start_kernel(void)
 {
 	char * command_line;
